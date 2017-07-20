@@ -10,7 +10,7 @@ var express = require('express'),
 
 server.listen(port, function () {
   console.log('Server listening at port %d', port);
-  fs.writeFile(__dirname + '/start.log', 'started');
+  fs.writeFile(__dirname + '/start.log', 'server started at ' + new Date());
 });
 
 // Setup routing
