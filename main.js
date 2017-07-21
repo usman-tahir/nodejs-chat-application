@@ -264,7 +264,7 @@ $(function () {
     removeChatTyping(data);
   });
 
-  // Upom creating a game
+  // Upon creating a game
   socket.on('gameCreated', function (data) {
     console.log('Game Created. ID is: ' + data.gameId);
     log(data.username + ' created Game ' + data.gameId);
