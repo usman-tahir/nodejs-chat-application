@@ -98,4 +98,118 @@ $(function () {
 
     addMessageElement($messageDiv, options);
   }
+
+  // Adds the visual chat typing message
+  function addChatTyping(data) {
+    data.typing = true;
+    data.message = 'is typing';
+
+    addChatMessage(data);
+  }
+
+  // Remove the visual chat typing message
+  function removeChatTyping(data) {
+    getTypingMessages(data).fadeOut(function () {
+      $(this).remove();
+    });
+  }
+
+  // Adds a message element to the messages, and scrolls to the bottom element
+  function addMessageElement(element, options) {
+    var $element = $(element);
+
+    if (!options) {
+      options = {};
+    }
+
+    if (typeof options.fade === 'undefined') {
+
+      options.fade = true;
+    }
+
+    if (typeof options.prepend === 'undefined') {
+      options.prepend = false;
+    }
+
+    // Apply the options
+    if (options.fade) {
+      $messages.prepend($element);
+    } else {
+      $messages.append($element);
+    }
+    $messages[0].scrollTop = $messages[0].scrollHeight;
+  }
+
+  // Prevent the input from having injected markup
+  function cleanInput(input) {
+    return $('<div/>').text(input).text();
+  }
+
+  // Update the typing event
+  function updateTyping() {
+    if (connected) {
+      if (!typing) {
+        typing = true;
+        socket.emit('typing');
+      }
+      lastTypingTime = (new Date()).getTime();
+
+      setTimeout(function () {
+        var typingTimer = (new Date()).getTime(),
+            timeDifference = typingTimer - lastTypingTime;
+
+        if (timeDifference >= TYPING_TIMER_LENGTH && typing) {
+          socket.emit('stop typing');
+          typing = false;
+        }
+      }, TYPING_TIMER_LENGTH);
+    }
+  }
+
+  // Creates the 'X is typing' message for a user
+  function getTypingMessages(data) {
+    return $('.typing.message').filter(function (i) {
+      return $(this).data('username') === data.username;
+    });
+  }
+
+  // Gets the color of a username through a hash function
+  function getUsernameColor(username) {
+    // Compute the hash code
+    var hash = 7,
+        index,
+        i;
+
+    for (i = 0; i < username.length; i += 1) {
+      hash = username.charCodeAt(i) + (hash << 5) - hash;
+    }
+
+    // Calculate the color
+    index = Math.abs(hash % COLORS.length);
+    return COLORS[index];
+  }
+
+  /* Keyboard events */
+
+  $window.keydown(function (event) {
+    // Autofocus the current input when a key is typed
+    if (!(event.ctrlKey || event.metaKey || event.altKey)) {
+      $currentInput.focus();
+    }
+
+    // When the client hits ENTER
+    if (event.which === 13) {
+      if (username) {
+        sendMessage();
+        socket.emit('stop typing');
+        typing = false;
+      } else {
+        setUsername();
+      }
+    }
+  });
+
+  $inputMessage.on('input', function() {
+    updateTyping();
+  });
 });
