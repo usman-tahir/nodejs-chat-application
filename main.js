@@ -212,4 +212,65 @@ $(function () {
   $inputMessage.on('input', function() {
     updateTyping();
   });
+
+  /* Click events */
+
+  // Focus input when clicking anywhere on the login page
+  $loginPage.click(function () {
+    $currentInput.focus();
+  });
+
+  // Focus input when clicking on the message input's border
+  $inputMessage.click(function () {
+    $inputMessage.focus();
+  });
+
+  $createGame.click(function () {
+    sendGame();
+  });
+
+  /* Socket events */
+
+  // Whenever the server emits 'login', log the login message
+  socket.on('login', function (data) {
+    connected = true;
+
+    // Display the welcome message
+    var message = 'Welcome to the Game Server ';
+    log(message, {
+      prepend: true
+    });
+    addParticipantsMessage(data);
+  });
+
+  // Whenever the server emits 'new message', update the chat body
+  socket.on('new message', function (data) {
+    addChatMessage(data);
+  });
+
+  // Whenever the server emits 'user joined', log it in the chat body
+  socket.on('user joined', function (data) {
+    log(data.username + ' joined');
+    addParticipantsMessage(data);
+  });
+
+  // Whenever the server emits 'typing', show the typing message
+  socket.on('typing', function (data) {
+    addChatTyping(data);
+  });
+
+  // Whenever the server emits 'stop typing', kill the typing message
+  socket.on('stop typing', function (data) {
+    removeChatTyping(data);
+  });
+
+  // Upom creating a game
+  socket.on('gameCreated', function (data) {
+    console.log('Game Created. ID is: ' + data.gameId);
+    log(data.username + ' created Game ' + data.gameId);
+  });
+
+  function sendGame() {
+    socket.emit('makeGame');
+  };
 });
