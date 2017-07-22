@@ -7,7 +7,13 @@ var express = require('express'),
     port = process.env.PORT || 3000
     fs = require('fs'),
     numberOfUsers = 0,
-    gameCollection;
+    gameCollection = {};
+
+// GameCollection object, that holds all games and info
+gameCollection = new function () {
+  this.totalGameCount = 0;
+  this.gameList = {};
+}
 
 server.listen(port, function () {
   console.log('Server listening at port %d', port);
@@ -16,12 +22,6 @@ server.listen(port, function () {
 
 // Setup routing
 app.use(express.static(__dirname + '/public'));
-
-// GameCollection object, that holds all games and info
-gameCollection = new function () {
-  this.totalGameCount = 0;
-  this.gameList = {};
-}
 
 // Chatroom
 io.on('connection', function (socket) {
@@ -90,10 +90,11 @@ io.on('connection', function (socket) {
     gameCollection.gameList.gameId.open = true;
     gameCollection.totalGameCount += 1;
 
-    io.emit('gameCreated' {
+    io.emit('gameCreated', {
       username: socket.username,
       gameId: gameId
     });
+
   });
 });
 
