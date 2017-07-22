@@ -6,7 +6,8 @@ var express = require('express'),
     io = require('socket.io')(server),
     port = process.env.PORT || 3000
     fs = require('fs'),
-    numberOfUsers = 0;
+    numberOfUsers = 0,
+    gameCollection;
 
 server.listen(port, function () {
   console.log('Server listening at port %d', port);
@@ -15,6 +16,12 @@ server.listen(port, function () {
 
 // Setup routing
 app.use(express.static(__dirname + '/public'));
+
+// GameCollection object, that holds all games and info
+gameCollection = new function () {
+  this.totalGameCount = 0;
+  this.gameList = {};
+}
 
 // Chatroom
 io.on('connection', function (socket) {
@@ -74,4 +81,27 @@ io.on('connection', function (socket) {
       });
     }
   });
+
+  socket.on('makeGame', function () {
+    var gameId = (Math.random() + 1).toString(36).slice(2, 18);
+    console.log('Game created by ' + socket.username + ' w/' + gameId);
+    gameCollection.gameList.gameId = gameId;
+    gameCollection.gameList.gameId.playerOne = socket.username;
+    gameCollection.gameList.gameId.open = true;
+    gameCollection.totalGameCount += 1;
+
+    io.emit('gameCreated' {
+      username: socket.username,
+      gameId: gameId
+    });
+  });
 });
+
+// Join a game
+function joinGame(username, game) {
+  if (game.playerTwo !== null) {
+    game.playerTwo = username;
+  } else {
+    alert('Game ' + game.id + ' is full.');
+  }
+}
